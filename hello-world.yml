@@ -1,0 +1,10 @@
+template: Hello, %s!
+defaultName: Stranger
+defaultSource: http://a.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf
+# defaultSource: http://localhost:8012/{z}/{x}/{y}.vector.pbf
+httpClient:
+  timeout: 5000ms
+  keepAlive: 500ms
+http:
+  gzip:
+    enabled: false
