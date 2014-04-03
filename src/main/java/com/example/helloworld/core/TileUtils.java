@@ -18,7 +18,7 @@ public class TileUtils {
     public static Tile decode(int zoom, int col, int row, VectorTile.tile vtile) {
         Tile tile = new Tile(zoom, col, row);
 
-        for (VectorTile.tile.layer vlayer: vtile.getLayersList()) {
+        for (VectorTile.tile.layer vlayer : vtile.getLayersList()) {
             Layer layer = tile.addLayer(new Layer(vlayer.getName(), vlayer.getExtent()));
 
             System.out.println("Layer version: " + vlayer.getVersion());
@@ -27,67 +27,32 @@ public class TileUtils {
                 throw new RuntimeException("Layer version reported as " + vlayer.getVersion() + ", which is unsupported.");
             }
 
-            for (VectorTile.tile.feature vfeature: vlayer.getFeaturesList()) {
-                Path2D path = new Path2D.Double();
-                PathFeature feature = new PathFeature(vfeature.getType(), vfeature.getId(), path);
-                layer.addFeature(feature);
+            for (VectorTile.tile.feature vfeature : vlayer.getFeaturesList()) {
+                Feature feature;
 
-                for (int i = 0; i < vfeature.getTagsCount();) {
+                switch (vfeature.getType()) {
+                    case Point:
+                        feature = decodePoint(vfeature);
+                        break;
+
+                    case LineString:
+                    case Polygon:
+                    case Unknown:
+                        feature = decodePath(vfeature);
+
+                        break;
+
+                    default:
+                        throw new RuntimeException("Unrecognized feature type: " + vfeature.getType());
+                }
+
+                for (int i = 0; i < vfeature.getTagsCount(); ) {
                     String key = vlayer.getKeys(vfeature.getTags(i++));
                     Object value = getValue(vlayer.getValues(vfeature.getTags(i++)));
 
                     feature.addTag(key, value);
                 }
 
-                // TODO points
-
-                int prevX = 0;
-                int prevY = 0;
-
-                for (int i = 0; i < vfeature.getGeometryCount();) {
-                    int instruction = vfeature.getGeometry(i++);
-                    int command = instruction & ((1 << Commands.BIT_LENGTH) - 1);
-                    int length = instruction >> Commands.BIT_LENGTH;
-
-                    switch (command) {
-                        case Commands.MOVE_TO:
-                        case Commands.LINE_TO:
-                            int next = i + 2 * length;
-                            List<Integer> coordinates = vfeature.getGeometryList().subList(i, next);
-
-                            for (int j = 0; j < coordinates.size(); j += 2) {
-                                int x = coordinates.get(j);
-                                int y = coordinates.get(j + 1);
-
-                                // convert to signed ints
-                                x = prevX + ((x >> 1) ^ (-(x & 1)));
-                                y = prevY + ((y >> 1) ^ (-(y & 1)));
-
-                                prevX = x;
-                                prevY = y;
-
-                                switch (command) {
-                                    case Commands.MOVE_TO:
-                                        path.moveTo(x, y);
-                                        break;
-
-                                    case Commands.LINE_TO:
-                                        path.lineTo(x, y);
-                                        break;
-                                }
-                            }
-
-                            i = next;
-                            break;
-
-                        case Commands.CLOSE_PATH:
-                            path.closePath();
-                            break;
-
-                        default:
-                            throw new RuntimeException("Unknown command: " + command);
-                    }
-                }
             }
         }
 
@@ -148,6 +113,83 @@ public class TileUtils {
         }
 
         return vtile.build();
+    }
+
+    protected static PathFeature decodePath(VectorTile.tile.feature feature) {
+        Path2D path = new Path2D.Double();
+
+        int prevX = 0;
+        int prevY = 0;
+
+        for (int i = 0; i < feature.getGeometryCount(); ) {
+            int instruction = feature.getGeometry(i++);
+            int command = instruction & ((1 << Commands.BIT_LENGTH) - 1);
+            int length = instruction >> Commands.BIT_LENGTH;
+
+            switch (command) {
+                case Commands.MOVE_TO:
+                case Commands.LINE_TO:
+                    int next = i + 2 * length;
+                    List<Integer> coordinates = feature.getGeometryList().subList(i, next);
+
+                    for (int j = 0; j < coordinates.size(); j += 2) {
+                        int x = coordinates.get(j);
+                        int y = coordinates.get(j + 1);
+
+                        // convert to signed ints
+                        x = prevX + ((x >> 1) ^ (-(x & 1)));
+                        y = prevY + ((y >> 1) ^ (-(y & 1)));
+
+                        prevX = x;
+                        prevY = y;
+
+                        switch (command) {
+                            case Commands.MOVE_TO:
+                                path.moveTo(x, y);
+                                break;
+
+                            case Commands.LINE_TO:
+                                path.lineTo(x, y);
+                                break;
+                        }
+                    }
+
+                    i = next;
+                    break;
+
+                case Commands.CLOSE_PATH:
+                    path.closePath();
+                    break;
+
+                default:
+                    throw new RuntimeException("Unknown command: " + command);
+            }
+        }
+
+        return new PathFeature(feature.getType(), feature.getId(), path);
+    }
+
+    protected static PointFeature decodePoint(VectorTile.tile.feature feature) {
+        // TODO MultiPoints (multiple MOVE_TOs within a Point feature)
+
+        assert feature.getGeometryCount() == 3;
+
+        int i = 0;
+        int instruction = feature.getGeometry(i++);
+        int command = instruction & ((1 << Commands.BIT_LENGTH) - 1);
+        int length = instruction >> Commands.BIT_LENGTH;
+
+        assert command == Commands.MOVE_TO;
+        assert length == 1;
+
+        int x = feature.getGeometry(i++);
+        int y = feature.getGeometry(i++);
+
+        // convert to signed ints
+        x = ((x >> 1) ^ (-(x & 1)));
+        y = ((y >> 1) ^ (-(y & 1)));
+
+        return new PointFeature(feature.getId(), new Point(x, y));
     }
 
     protected static Object getValue(VectorTile.tile.value value) {
@@ -219,7 +261,7 @@ public class TileUtils {
             return encodeGeometry((Ellipse2D.Double) shape);
         }
 
-        if (shape instanceof  Path2D.Double) {
+        if (shape instanceof Path2D.Double) {
             return encodeGeometry((Path2D.Double) shape);
         }
 
@@ -266,7 +308,6 @@ public class TileUtils {
 
                     break;
 
-                //(length << cmd_bits) | (cmd & ((1 << cmd_bits) - 1))
                 case PathIterator.SEG_CLOSE:
                     // command type 7 (ClosePath), length 1
                     commands.add((1 << Commands.BIT_LENGTH) | (Commands.CLOSE_PATH & ((1 << Commands.BIT_LENGTH) - 1)));
