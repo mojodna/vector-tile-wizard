@@ -37,7 +37,7 @@ public class Renderer {
         canvas.smooth();
 
         canvas.beginDraw();
-        canvas.background(0xff333333);
+        canvas.background(0xffffffff);
 
         // TODO do this in a threadpool
         // TODO PGraphics, PImage, or BufferedImage?
@@ -66,8 +66,9 @@ public class Renderer {
             ctx.setTransform(AffineTransform.getScaleInstance(TILE_SIZE / layer.getExtent(), TILE_SIZE / layer.getExtent()));
 
             List<Symbolizer> symbolizers = new ArrayList<>();
-            symbolizers.add(new PathSymbolizer());
+            // symbolizers.add(new PathSymbolizer());
             // symbolizers.add(new VertexSymbolizer());
+            symbolizers.add(new HachureSymbolizer());
 
             logger.info("Rendering " + layer.getName());
 
@@ -91,8 +92,11 @@ public class Renderer {
     }
 
     private boolean shouldRenderLayer(Layer layer) {
+        return true;
+        /*
         return layer.getName().equals("landuse") ||
                 layer.getName().equals("road");
+                */
     }
 
     private final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());

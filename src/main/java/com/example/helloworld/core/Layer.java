@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Layer {
-    private final double extent;
+    private final int extent;
     private final String name;
     private final List<Feature> features = new ArrayList<>();
 
-    public Layer(String name, double extent) {
+    public Layer(String name, int extent) {
         this.name = name;
         this.extent = extent;
     }
 
-    public double getExtent() {
+    public int getExtent() {
         return this.extent;
     }
 

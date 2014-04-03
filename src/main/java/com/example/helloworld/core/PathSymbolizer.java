@@ -9,11 +9,13 @@ public class PathSymbolizer extends AbstractSymbolizer {
     public void apply(RenderingContext ctx, Feature feature) {
         // TODO check that feature.getShape() instanceof Path2D
 
+        /*
         if (ctx.getLayer().getName().equals("road") &&
                 (!feature.getTags().containsKey("class") ||
                         !feature.getTags().get("class").equals("street"))) {
             return;
         }
+        */
 
         PGraphics graphics = ctx.getGraphics();
 
@@ -25,6 +27,11 @@ public class PathSymbolizer extends AbstractSymbolizer {
 
             case "road":
                 graphics.stroke(0xffcccccc);
+                graphics.noFill();
+                break;
+
+            case "contours":
+                graphics.stroke(0xff666666);
                 graphics.noFill();
                 break;
         }

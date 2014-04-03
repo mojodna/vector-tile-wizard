@@ -42,7 +42,8 @@ public class VectorTileServiceResource {
     }
 
     protected VectorTile.tile fetch(int zoom, int x, int y) throws IOException {
-        // overzooming
+        // TODO overzooming
+        /*
         if (zoom > 14) {
             x = (int) Math.floor(x / Math.pow(2, zoom - 14));
             y = (int) Math.floor(y / Math.pow(2, zoom - 14));
@@ -50,6 +51,7 @@ public class VectorTileServiceResource {
 
             // TODO clip the resulting geometry
         }
+        */
 
         String url = source
                 .replace("{z}", Integer.toString(zoom))

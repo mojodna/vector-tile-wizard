@@ -8,8 +8,8 @@ import java.awt.geom.Ellipse2D;
 public class PointFeature extends Feature {
     private final Point point;
 
-    public PointFeature(VectorTile.tile.GeomType type, Long id, Point point) {
-        super(id, type);
+    public PointFeature(Long id, Point point) {
+        super(id, VectorTile.tile.GeomType.Point);
         this.point = point;
     }
 
