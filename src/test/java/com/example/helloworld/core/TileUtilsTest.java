@@ -18,7 +18,7 @@ public class TileUtilsTest {
 
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(0));
+        assertThat("there are no layers", vtile.getLayersCount(), equalTo(0));
     }
 
     @Test
@@ -29,12 +29,12 @@ public class TileUtilsTest {
         tile.addLayer(new Layer(name, 256));
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(1));
+        assertThat("there is 1 layer", vtile.getLayersCount(), equalTo(1));
 
         VectorTile.tile.layer layer = vtile.getLayers(0);
 
-        assertThat(layer.getName(), equalTo(name));
-        assertThat(layer.getFeaturesCount(), equalTo(0));
+        assertThat("the names match", layer.getName(), equalTo(name));
+        assertThat("there are no features", layer.getFeaturesCount(), equalTo(0));
     }
 
     @Test
@@ -45,17 +45,17 @@ public class TileUtilsTest {
         layer.addFeature(feature);
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(1));
+        assertThat("there is 1 layer", vtile.getLayersCount(), equalTo(1));
 
         VectorTile.tile.layer vlayer = vtile.getLayers(0);
 
-        assertThat(vlayer.getFeaturesCount(), equalTo(1));
+        assertThat("there is 1 feature", vlayer.getFeaturesCount(), equalTo(1));
 
         VectorTile.tile.feature vfeature = vlayer.getFeatures(0);
 
-        assertThat(vfeature.getId(), equalTo(feature.getId()));
-        assertThat(vfeature.getType(), equalTo(feature.getType()));
-        assertThat(vfeature.getGeometryCount(), equalTo(3));
+        assertThat("ids match", vfeature.getId(), equalTo(feature.getId()));
+        assertThat("types match", vfeature.getType(), equalTo(feature.getType()));
+        assertThat("there are 3 geometry instructions", vfeature.getGeometryCount(), equalTo(3));
 
         assertThat(vfeature.getGeometry(0), equalTo(9)); // MOVE_TO (1) + 1 vertex
         assertThat(vfeature.getGeometry(1), equalTo(3));
@@ -77,17 +77,17 @@ public class TileUtilsTest {
         layer.addFeature(feature);
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(1));
+        assertThat("there is 1 layer", vtile.getLayersCount(), equalTo(1));
 
         VectorTile.tile.layer vlayer = vtile.getLayers(0);
 
-        assertThat(vlayer.getFeaturesCount(), equalTo(1));
+        assertThat("there is 1 feature", vlayer.getFeaturesCount(), equalTo(1));
 
         VectorTile.tile.feature vfeature = vlayer.getFeatures(0);
 
-        assertThat(vfeature.getId(), equalTo(feature.getId()));
-        assertThat(vfeature.getType(), equalTo(feature.getType()));
-        assertThat(vfeature.getGeometryCount(), equalTo(10));
+        assertThat("ids match", vfeature.getId(), equalTo(feature.getId()));
+        assertThat("types match", vfeature.getType(), equalTo(feature.getType()));
+        assertThat("there are 10 features", vfeature.getGeometryCount(), equalTo(10));
 
         assertThat(vfeature.getGeometry(0), equalTo(9)); // [00001 001] = command type 1 (MoveTo), length 1
         assertThat(vfeature.getGeometry(1), equalTo(5)); // relative MoveTo(+3, +6) (5 = zigzag encoded)
@@ -119,17 +119,17 @@ public class TileUtilsTest {
         layer.addFeature(feature);
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(1));
+        assertThat("there is 1 layer", vtile.getLayersCount(), equalTo(1));
 
         VectorTile.tile.layer vlayer = vtile.getLayers(0);
 
-        assertThat(vlayer.getFeaturesCount(), equalTo(1));
+        assertThat("there is 1 feature", vlayer.getFeaturesCount(), equalTo(1));
 
         VectorTile.tile.feature vfeature = vlayer.getFeatures(0);
 
-        assertThat(vfeature.getId(), equalTo(feature.getId()));
-        assertThat(vfeature.getType(), equalTo(feature.getType()));
-        assertThat(vfeature.getGeometryCount(), equalTo(9));
+        assertThat("ids match", vfeature.getId(), equalTo(feature.getId()));
+        assertThat("types match", vfeature.getType(), equalTo(feature.getType()));
+        assertThat("there are 9 geometry instructions", vfeature.getGeometryCount(), equalTo(9));
 
         assertThat(vfeature.getGeometry(0), equalTo(9)); // [00001 001] = command type 1 (MoveTo), length 1
         assertThat(vfeature.getGeometry(1), equalTo(5)); // relative MoveTo(+3, +6)
@@ -156,19 +156,19 @@ public class TileUtilsTest {
 
         VectorTile.tile vtile = TileUtils.encode(tile);
 
-        assertThat(vtile.getLayersCount(), equalTo(1));
+        assertThat("there is 1 layer", vtile.getLayersCount(), equalTo(1));
 
         VectorTile.tile.layer vlayer = vtile.getLayers(0);
         List<String> keys = vlayer.getKeysList();
         List<VectorTile.tile.value> values = vlayer.getValuesList();
 
-        assertThat(vlayer.getFeaturesCount(), equalTo(1));
-        assertThat(vlayer.getKeysCount(), equalTo(2));
-        assertThat(vlayer.getValuesCount(), equalTo(1));
+        assertThat("there is 1 feature", vlayer.getFeaturesCount(), equalTo(1));
+        assertThat("there are 2 keys", vlayer.getKeysCount(), equalTo(2));
+        assertThat("there is 1 value", vlayer.getValuesCount(), equalTo(1));
 
         VectorTile.tile.feature vfeature = vlayer.getFeatures(0);
 
-        assertThat(vfeature.getTagsCount(), equalTo(4));
+        assertThat("there are 4 tags", vfeature.getTagsCount(), equalTo(4));
 
         int i = 0;
         String key;
@@ -180,13 +180,13 @@ public class TileUtilsTest {
         key = keys.get(vfeature.getTags(i++));
         value = values.get(vfeature.getTags(i++));
 
-        assertThat(key, equalTo("spinny"));
-        assertThat(value.getStringValue(), equalTo("yes"));
+        assertThat("keys match", key, equalTo("spinny"));
+        assertThat("values match", value.getStringValue(), equalTo("yes"));
 
         key = keys.get(vfeature.getTags(i++));
         value = values.get(vfeature.getTags(i++));
 
-        assertThat(key, equalTo("horse"));
-        assertThat(value.getStringValue(), equalTo("yes"));
+        assertThat("keys match", key, equalTo("horse"));
+        assertThat("values match", value.getStringValue(), equalTo("yes"));
     }
 }
